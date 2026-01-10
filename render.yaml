@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: microstream-dashboard
+    env: docker
+    dockerfilePath: ./services/dashboard/Dockerfile
+    dockerContext: ./services/dashboard
+    envVars:
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        value: kafka:9092
+      - key: KAFKA_REGIME_SIGNALS_TOPIC
+        value: market_regime_signals
+    
+  - type: worker
+    name: microstream-ml-engine
+    env: docker
+    dockerfilePath: ./services/ml_engine/Dockerfile
+    dockerContext: ./services/ml_engine
+    envVars:
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        value: kafka:9092
+      - key: KAFKA_RAW_BARS_TOPIC
+        value: market_raw_bars
+      - key: KAFKA_REGIME_SIGNALS_TOPIC
+        value: market_regime_signals
+    
+  - type: worker
+    name: microstream-ingestion
+    env: docker
+    dockerfilePath: ./services/ingestion/Dockerfile
+    dockerContext: ./services/ingestion
+    envVars:
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        value: kafka:9092
+      - key: BINANCE_WS_URL
+        value: wss://stream.binance.com:9443/ws/btcusdt@aggTrade
+      - key: KAFKA_RAW_BARS_TOPIC
+        value: market_raw_bars
+
+databases:
+  - name: kafka
+    plan: free
