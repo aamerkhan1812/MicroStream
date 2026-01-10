@@ -1,0 +1,45 @@
+# Railway.app Deployment Configuration
+# No credit card required!
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: unless-stopped
+
+  ingestion:
+    build:
+      context: ./services/ingestion
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      BINANCE_WS_URL: wss://stream.binance.com:9443/ws/btcusdt@aggTrade
+    restart: unless-stopped
+
+  ml_engine:
+    build:
+      context: ./services/ml_engine
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    volumes:
+      - ./services/ml_engine/models:/app/models
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ./services/dashboard
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8501:8501"
+    restart: unless-stopped

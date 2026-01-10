@@ -1,0 +1,20 @@
+===============================================
+   AFTER RESTART - RUN THIS!
+===============================================
+
+Step 1: Open PowerShell
+
+Step 2: Run these 2 commands:
+
+   cd d:\MicroStream
+   .\deploy.ps1
+
+Step 3: Wait for dashboard to open!
+
+===============================================
+
+That's it! The script does everything else.
+
+Dashboard will open at: http://localhost:8501
+
+===============================================

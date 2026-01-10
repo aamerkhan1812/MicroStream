@@ -1,0 +1,95 @@
+# Lightweight Docker Compose for Free Tier (2GB RAM)
+# Optimized for Oracle Cloud Always Free VM
+
+version: '3.8'
+
+services:
+  # Zookeeper - minimal config
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: microstream-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      # Memory limits for free tier
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms256M"
+    mem_limit: 512m
+    networks:
+      - microstream-network
+    restart: unless-stopped
+
+  # Kafka - minimal config
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: microstream-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Memory limits for free tier
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+    mem_limit: 768m
+    networks:
+      - microstream-network
+    restart: unless-stopped
+
+  # Ingestion Service
+  ingestion:
+    build:
+      context: ./services/ingestion
+      dockerfile: Dockerfile
+    container_name: microstream-ingestion
+    depends_on:
+      - kafka
+    env_file:
+      - .env
+    mem_limit: 256m
+    networks:
+      - microstream-network
+    restart: unless-stopped
+
+  # ML Engine
+  ml_engine:
+    build:
+      context: ./services/ml_engine
+      dockerfile: Dockerfile
+    container_name: microstream-ml-engine
+    depends_on:
+      - kafka
+    env_file:
+      - .env
+    volumes:
+      - ./services/ml_engine/models:/app/models
+    mem_limit: 384m
+    networks:
+      - microstream-network
+    restart: unless-stopped
+
+  # Dashboard
+  dashboard:
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    container_name: microstream-dashboard
+    depends_on:
+      - kafka
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    mem_limit: 256m
+    networks:
+      - microstream-network
+    restart: unless-stopped
+
+networks:
+  microstream-network:
+    driver: bridge
