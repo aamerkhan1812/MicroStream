@@ -18,18 +18,20 @@ class RegimeClassifier:
     """
     Hidden Markov Model for liquidity regime classification
     
-    Hidden States:
-    - State 0 (Stable Liquidity): Low volatility, consistent volume
-    - State 1 (High Volatility): Directional flow, widening ranges  
-    - State 2 (Liquidity Crisis): Extreme variance, volume spikes
+    Hidden States (learned from 500K+ bars):
+    - State 0: Extreme negative momentum, high volatility (~20% of time) 
+    - State 1: BASELINE - Normal market, neutral momentum (~60% of time)
+    - State 2: Extreme positive momentum, high volatility (~20% of time)
     
+    Note: State 1 (60%) is the NORMAL/BASELINE state.
+    States 0 and 2 are volatile extremes (bearish/bullish).
     Uses Viterbi algorithm for Maximum Likelihood Estimate of current state
     """
     
     REGIME_NAMES = {
-        0: "Stable Liquidity",
-        1: "High Volatility",
-        2: "Liquidity Crisis"
+        0: "Bearish Extreme",
+        1: "Normal Market",
+        2: "Bullish Extreme"
     }
     
     def __init__(self, n_components: int = 3, model_path: Optional[str] = None):
