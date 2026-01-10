@@ -36,7 +36,12 @@ class BinanceWebSocketClient:
         self.symbol = symbol.lower()
         self.ws_url = os.getenv('BINANCE_WS_URL', f'wss://stream.binance.com:9443/ws/{self.symbol}@aggTrade')
         self.aggregator = TradeAggregator()
-        self.kafka_producer = KafkaProducerClient()
+        
+        # Initialize Kafka producer with config
+        bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
+        topic = os.getenv('KAFKA_RAW_BARS_TOPIC', 'market_raw_bars')
+        self.kafka_producer = KafkaProducerClient(bootstrap_servers, topic)
+        
         self.reconnect_delay = 1  # Start with 1 second
         self.max_reconnect_delay = 60  # Max 60 seconds
         self.is_running = False
