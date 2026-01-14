@@ -72,9 +72,10 @@ class MLInferenceEngine:
                 self.input_topic,
                 bootstrap_servers=self.bootstrap_servers,
                 value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-                auto_offset_reset='latest',  # Start from latest for real-time
+                auto_offset_reset='earliest',  # Process all messages from beginning
                 enable_auto_commit=True,
-                group_id='ml_engine_group'
+                group_id='ml_engine_group',
+                consumer_timeout_ms=-1  # Wait indefinitely for messages
             )
             
             # Producer for regime signals
@@ -99,9 +100,15 @@ class MLInferenceEngine:
         logger.info("=" * 60)
         
         try:
+            logger.info("Entering consumer loop, waiting for messages...")
+            message_count = 0
             for message in self.consumer:
+                message_count += 1
+                logger.info(f"Received message #{message_count}")
                 bar = message.value
                 self._process_bar(bar)
+            
+            logger.info(f"Consumer loop exited after {message_count} messages")
                 
         except KeyboardInterrupt:
             logger.info("Received shutdown signal")
