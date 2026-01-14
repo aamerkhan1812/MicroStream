@@ -33,13 +33,13 @@ Real-time web interface built with Streamlit, featuring interactive Plotly visua
 ![Dashboard Overview](Images/Dashboard1.png)
 
 ### Real-Time Market Monitoring
-![Real-Time Monitoring](Images/realtime_micro_moniter.png)
+![Real-Time Monitoring](Images/market_micro_moniter.png)
 
 ### Regime Analysis
-![Regime Distribution](Images/regemie_proba_dist.png)
+![Regime Distribution](Images/regieme_prob_dist.png)
 
 ### Detailed Metrics
-![Dashboard Metrics](Images/Dashbaord2.png)
+![Dashboard Metrics](Images/dashboard2.png)
 
 ## Technical Stack
 
