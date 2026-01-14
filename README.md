@@ -1,182 +1,168 @@
-# MicroStream 📊
+# MicroStream
 
-**Real-Time Market Microstructure & Liquidity Regime Detection System**
+**Real-Time Market Microstructure and Liquidity Regime Detection System**
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen.svg)](https://www.docker.com/)
-[![Kafka](https://img.shields.io/badge/Kafka-Streaming-orange.svg)](https://kafka.apache.org/)
-[![ML](https://img.shields.io/badge/ML-Scikit--learn-red.svg)](https://scikit-learn.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## Overview
 
-## 🎯 Overview
+MicroStream is a real-time market analysis system that detects liquidity regimes in cryptocurrency markets using machine learning. The system processes live trade data from Binance, applies unsupervised learning models, and provides real-time visualization of market microstructure patterns.
 
-MicroStream is a production-ready real-time system that detects market regimes in cryptocurrency markets using machine learning. It processes live trade data from Binance, applies advanced ML models, and visualizes market microstructure patterns through an interactive dashboard.
+## Features
 
-### Key Features
+- Real-time processing of BTC/USDT trade data via WebSocket connection
+- Unsupervised machine learning for regime detection and anomaly identification
+- Interactive web-based dashboard with live visualizations
+- Microservices architecture with Docker containerization
+- Event-driven data pipeline using Apache Kafka
 
-- **Real-Time Processing**: Streams live BTC/USDT trades from Binance WebSocket
-- **ML-Powered Detection**: Uses Isolation Forest + Hidden Markov Models
-- **Interactive Dashboard**: Modern Streamlit UI with Plotly visualizations
-- **Microservices Architecture**: Docker-based, horizontally scalable
-- **Production Ready**: 24/7 operation with health monitoring
+## System Components
 
-## 🏗️ Architecture
+### Data Ingestion Service
+Connects to Binance WebSocket API to stream live trade data. Aggregates individual trades into 1-minute OHLCV bars and publishes to Kafka message broker.
 
-```
-Binance WebSocket → Ingestion → Kafka → ML Engine → Dashboard
-                                  ↓
-                            Regime Signals
-```
+### ML Engine
+Processes market data through a two-stage machine learning pipeline:
+- **Isolation Forest**: Detects anomalous market behavior
+- **Hidden Markov Model**: Classifies market regimes based on momentum, volatility, and trading activity
 
-### Components
+### Dashboard
+Real-time web interface built with Streamlit, featuring interactive Plotly visualizations of price action, regime classifications, and market microstructure features.
 
-1. **Ingestion Service**: Connects to Binance WebSocket, aggregates trades into 1-minute bars
-2. **ML Engine**: Processes bars, detects regimes using trained models
-3. **Dashboard**: Real-time visualization with interactive charts
-4. **Kafka**: Message broker for reliable data streaming
-5. **Zookeeper**: Kafka coordination
+## Dashboard Screenshots
 
-## 🚀 Quick Start
+### Main Dashboard View
+![Dashboard Overview](Images/Dashboard1.png)
+
+### Real-Time Market Monitoring
+![Real-Time Monitoring](Images/realtime_micro_moniter.png)
+
+### Regime Analysis
+![Regime Distribution](Images/regemie_proba_dist.png)
+
+### Detailed Metrics
+![Dashboard Metrics](Images/Dashbaord2.png)
+
+## Technical Stack
+
+**Languages & Frameworks**
+- Python 3.11
+- Streamlit (Dashboard)
+- Plotly (Visualizations)
+
+**Machine Learning**
+- scikit-learn (Isolation Forest)
+- hmmlearn (Hidden Markov Models)
+- pandas, numpy (Data processing)
+
+**Infrastructure**
+- Docker & Docker Compose
+- Apache Kafka (Message streaming)
+- Apache Zookeeper (Coordination)
+
+**Data Source**
+- Binance WebSocket API
+
+## Installation
 
 ### Prerequisites
+- Docker and Docker Compose installed
+- Minimum 4GB RAM
+- Active internet connection
 
-- Docker & Docker Compose
-- 4GB RAM minimum
-- Internet connection (for Binance WebSocket)
-
-### Run Locally
+### Quick Start
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/MicroStream.git
+# Clone the repository
+git clone https://github.com/aamerkhan1812/MicroStream.git
 cd MicroStream
 
 # Start all services
 docker compose up -d
 
-# Access dashboard
-open http://localhost:8501
+# Access the dashboard
+# Navigate to http://localhost:8501 in your web browser
 ```
 
-The system will:
-1. Connect to Binance WebSocket
-2. Start processing live trades
-3. Detect market regimes after ~20 minutes (warm-up period)
+The system requires approximately 20 minutes of warm-up time to collect sufficient data for regime detection.
 
-## 📊 Dashboard
-
-Access the modern interactive dashboard at **http://localhost:8501**
-
-Features:
-- **Real-time price chart** (candlestick)
-- **Regime timeline** with confidence scores
-- **Market microstructure features** (momentum, volatility, activity)
-- **System health** indicators
-- **Auto-refresh** every 2 seconds
-
-## 🤖 Machine Learning
-
-### Models
-
-**1. Isolation Forest** (Anomaly Detection)
-- Detects unusual market behavior
-- 100 trees, 5% contamination threshold
-- Trained on 500K+ historical bars
-
-**2. Hidden Markov Model** (Regime Classification)
-- 3 states: Normal Market, Bearish Extreme, Bullish Extreme
-- Full covariance, Baum-Welch training
-- Discovers patterns in momentum, volatility, and activity
-
-### Features
-
-- **Momentum**: `ln(Close_t / Close_{t-1})`
-- **Volatility**: `(High - Low) / Open`
-- **Activity**: `Volume_t / SMA_20(Volume)`
-
-All features normalized using rolling Z-score.
-
-### Performance
-
-- **Inference**: <1ms per bar
-- **Accuracy**: 99.5%+ on validation set
-- **Training Data**: 500K+ bars (May 2024 - Dec 2025)
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 MicroStream/
 ├── services/
-│   ├── ingestion/          # Binance WebSocket → Kafka
-│   ├── ml_engine/          # ML models & inference
-│   └── dashboard/          # Streamlit UI
+│   ├── ingestion/          # WebSocket data ingestion
+│   ├── ml_engine/          # Machine learning inference
+│   └── dashboard/          # Web interface
 ├── data/
 │   └── btc/               # Historical training data
 ├── notebooks/
-│   └── train_models.py    # Model training script
+│   └── train_models.py    # Model training pipeline
 ├── docker-compose.yml     # Service orchestration
 └── README.md
 ```
 
-## 🔧 Configuration
+## Machine Learning Methodology
 
-Edit `.env` file:
+### Feature Engineering
+
+Three normalized features are extracted from each 1-minute bar:
+
+- **Momentum**: Logarithmic price return
+- **Volatility Proxy**: Intrabar price range relative to opening price
+- **Activity Ratio**: Current volume relative to 20-period moving average
+
+### Model Architecture
+
+**Isolation Forest**
+- Ensemble of 100 decision trees
+- Contamination threshold: 5%
+- Trained on 500,000+ historical bars
+
+**Hidden Markov Model**
+- 3 hidden states representing market regimes
+- Full covariance matrix
+- Baum-Welch algorithm for parameter estimation
+
+### Performance Metrics
+
+- Inference latency: <1ms per bar
+- Model accuracy: 99.5%+ on validation set
+- Training dataset: 500,000+ bars (May 2024 - December 2025)
+
+## Configuration
+
+System parameters can be adjusted in the `.env` file:
 
 ```bash
-# Kafka
+# Kafka Configuration
 KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 KAFKA_RAW_BARS_TOPIC=market_raw_bars
 KAFKA_REGIME_SIGNALS_TOPIC=market_regime_signals
 
-# Binance
+# Data Source
 BINANCE_WS_URL=wss://stream.binance.com:9443/ws/btcusdt@aggTrade
 SYMBOL=BTCUSDT
 
-# ML
+# ML Parameters
 ISOLATION_FOREST_CONTAMINATION=0.05
 HMM_N_COMPONENTS=3
 FEATURE_WINDOW_SIZE=20
 ```
 
-## 🎓 For Internships & Portfolios
+## Development
 
-This project demonstrates:
+### Retraining Models
 
-- **System Design**: Microservices, event-driven architecture
-- **ML Engineering**: Model training, deployment, inference
-- **Real-Time Processing**: Streaming data, Kafka
-- **DevOps**: Docker, containerization, orchestration
-- **Data Engineering**: Feature engineering, data pipelines
-- **Full Stack**: Backend (Python) + Frontend (Streamlit)
-
-### Talking Points
-
-- "Built a real-time ML system processing live market data"
-- "Deployed microservices architecture with Docker & Kafka"
-- "Trained unsupervised ML models on 500K+ data points"
-- "Created interactive dashboard with sub-second latency"
-- "System runs 24/7 with automatic health monitoring"
-
-## 📈 Results
-
-- **Uptime**: 23+ hours continuous operation
-- **Throughput**: Processes 1 bar/minute
-- **Latency**: <100ms end-to-end
-- **Regime Signals**: 22+ detections in test run
-
-## 🛠️ Development
-
-### Retrain Models
+To retrain models with updated data:
 
 ```bash
-# With new data in data/btc/
+# Place new CSV files in data/btc/
 python notebooks/train_models.py
 
-# Restart ML engine to use new models
+# Restart ML engine to load new models
 docker compose restart ml_engine
 ```
 
-### View Logs
+### Viewing Logs
 
 ```bash
 # All services
@@ -186,29 +172,27 @@ docker compose logs -f
 docker compose logs -f ml_engine
 ```
 
-### Stop System
+### Stopping the System
 
 ```bash
 docker compose down
 ```
 
-## 📝 License
+## System Requirements
 
-MIT License - see LICENSE file
+- **CPU**: 2+ cores recommended
+- **RAM**: 4GB minimum
+- **Storage**: 2GB for Docker images and data
+- **Network**: Stable internet connection for WebSocket streaming
 
-## 🤝 Contributing
+## License
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+MIT License
 
-## 📧 Contact
+## Author
 
-**Your Name** - your.email@example.com
+Aamer Khan
 
-Project Link: https://github.com/yourusername/MicroStream
+## Repository
 
----
-
-**Built with ❤️ for real-time market analysis**
+https://github.com/aamerkhan1812/MicroStream
